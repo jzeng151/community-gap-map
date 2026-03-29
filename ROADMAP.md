@@ -39,7 +39,7 @@
 ## Person 3 — Map Core
 
 - [x] 3.1 Scaffold Next.js project (App Router, Tailwind, TypeScript, folder structure)
-- [ ] 3.2 Integrate Mapbox GL JS — load map centered on NYC; configure token via env var
+- [x] 3.2 Integrate Mapbox GL JS — load map centered on NYC; configure token via env var
 - [ ] 3.3 Render service pins from `offerings` — blue = gov, green = npo, orange = mutual-aid; solid = open, dashed outline = closed, gray = unknown
 - [ ] 3.4 Pin tooltip — name, address, provider type, availability badge, freshness indicator ("Hours as of [imported_at] · Flag if inaccurate")
 - [ ] 3.5 Map legend — always visible, upper-left; all 3 provider colors + open/closed/unknown symbols
