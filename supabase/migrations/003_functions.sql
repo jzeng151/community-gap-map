@@ -5,6 +5,7 @@ create or replace function flag_pulse(post_id uuid)
 returns int
 language plpgsql
 security definer  -- runs with owner privileges so anon role can increment flag_count
+set search_path = public  -- pin search_path to prevent schema injection
 as $$
 declare
   new_count int;
