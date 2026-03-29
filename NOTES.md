@@ -17,15 +17,31 @@ Update this file as the project progresses.
 
 ## Data sources
 
-### NYC Open Data — Facilities & Providers API
-- **URL:** https://data.cityofnewyork.us/resource/ (confirm exact dataset ID)
-- **Status:** Not yet audited
-- **Field mapping to document:** name, category, provider_type, address, hours_json
+### NYC Open Data — Facilities Database (FacDB)
+- **Resource ID:** `ji82-xba5`
+- **URL:** `https://data.cityofnewyork.us/resource/ji82-xba5.json`
+- **Status:** Audited 2026-03-29. Import script: `scripts/seed_offerings.py`.
+- **Record count:** 15,425 after filtering (16,591 raw → 233 skipped no coords → 933 deduped)
+- **Category mapping (facsubgrp → category):**
+  - `SOUP KITCHENS AND FOOD PANTRIES`, `CHILD NUTRITION` → `food` (2,569)
+  - `NON-RESIDENTIAL HOUSING AND HOMELESS SERVICES` → `housing` (253)
+  - `HOSPITALS AND CLINICS`, `MENTAL HEALTH`, `SUBSTANCE USE DISORDER TREATMENT PROGRAMS`, etc. → `healthcare` (3,169)
+  - `DAY CARE`, `DOE UNIVERSAL PRE-KINDERGARTEN`, `AFTER-SCHOOL PROGRAMS`, `PRESCHOOLS FOR STUDENTS WITH DISABILITIES` → `childcare` (5,204)
+  - `LEGAL AND INTERVENTION SERVICES` → `legal` (266)
+  - `WORKFORCE DEVELOPMENT`, `YOUTH CENTERS...`, `GED...`, `ADULT AND IMMIGRANT LITERACY` → `jobs` (3,964)
+- **Provider type:** `optype = 'Public'` → `gov`; `Non-public`/blank → `npo`. No mutual-aid in FacDB.
+- **Hours:** FacDB has no hours. All records get `availability_status = 'unknown'`, `hours_json = null`.
+- **Coordinates:** Direct `latitude`/`longitude` string fields. Records with `0.0` skipped.
+
+### NYC SBS Workforce1 Career Centers
+- **Resource ID:** `6smc-7mk6`
+- **URL:** `https://data.cityofnewyork.us/resource/6smc-7mk6.json`
+- **Status:** Included in `scripts/seed_offerings.py`. 41 records, all with hours.
+- **Hours format:** Plain text `"Mon - Fri: 8:30 AM - 5:00 PM; Sat: 9:00 AM - 1:00 PM"` — parsed into `{"schedule": [{"days": "...", "hours": "..."}], "text": "..."}`.
+- **Category:** `jobs`, `provider_type`: `gov`. Merged before FacDB in pipeline so Workforce1 hours survive dedup.
 
 ### HRA Social Services dataset
-- **URL:** TBD
-- **Status:** Not yet audited
-- **Overlap with Facilities dataset:** TBD
+- **Status:** Superseded by FacDB, which already includes HRA-source records. No separate import needed.
 
 ### NYC Planning NTA boundaries
 - **Layer:** `geo_export`

@@ -25,14 +25,14 @@
 
 ## Person 2 — Data Pipeline
 
-- [ ] 2.1 Audit NYC Open Data Facilities & Providers API — field coverage by borough/category; document mapping in NOTES.md
-- [ ] 2.2 Audit HRA Social Services dataset — same audit; note overlap with Facilities dataset
+- [x] 2.1 Audit NYC Open Data Facilities & Providers API — documented in NOTES.md
+- [x] 2.2 Audit HRA Social Services dataset — superseded by FacDB (see NOTES.md)
 - [ ] 2.3 Pull NYC Planning NTA boundaries (`geo_export` layer) — extract centroid lat/lng per NTA; compute bounding box diagonal for neighborhoods < 0.5 km²; output as `src/data/nta-centroids.json`
-- [ ] 2.4 Write Python import script — normalize fields, classify `provider_type`, dedupe on `(name, address, category)`, keep more-complete hours on conflict
-- [ ] 2.5 Implement hours quality check — < 60%: set `availability_status = 'unknown'` + report; < 30%: flag decision to skip availability toggle
-- [ ] 2.6 Set `availability_status` at import time; record `imported_at` timestamp
+- [x] 2.4 Write Python import script — `scripts/seed_offerings.py`; FacDB + Workforce1; dedupe keeps record with hours on conflict
+- [x] 2.5 Hours quality check — FacDB 0% hours → all `unknown`; Workforce1 has hours for 41 career centers
+- [x] 2.6 Set `availability_status` at import time; `imported_at` set server-side at upsert
 - [ ] 2.7 Run one-time seed into Supabase via service role key; verify row count + spot-check per borough
-- [ ] 2.8 Document re-import procedure in NOTES.md (monthly; which fields refresh vs. preserve)
+- [x] 2.8 Re-import procedure documented in NOTES.md
 
 ---
 
