@@ -25,9 +25,11 @@ export function MapView({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
 
-  // Keep latest data in refs so event handlers don't go stale
+  // Keep latest data and callbacks in refs so event handlers don't go stale
   const offeringsRef = useRef(offerings)
   useEffect(() => { offeringsRef.current = offerings }, [offerings])
+  const onOfferingSelectRef = useRef(onOfferingSelect)
+  useEffect(() => { onOfferingSelectRef.current = onOfferingSelect }, [onOfferingSelect])
 
   // Initialize map once
   useEffect(() => {
@@ -153,7 +155,7 @@ export function MapView({
         if (!feat) return
         const id = feat.properties?.id as string
         const found = offeringsRef.current.find(o => o.id === id)
-        if (found) onOfferingSelect(found)
+        if (found) onOfferingSelectRef.current(found)
       }
 
       map.on('click', 'offerings-active', handleOfferingClick)
@@ -168,19 +170,19 @@ export function MapView({
           .setLngLat(coords)
           .setHTML(
             `<div style="padding:10px 12px;font-family:inherit">
-              <p style="font-weight:600;font-size:13px;margin:0 0 2px">${CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] ?? category}</p>
-              <p style="font-size:12px;color:#71717a;margin:0">${neighborhood}</p>
+              <p style="font-weight:600;font-size:13px;margin:0 0 2px">${escapeHtml(CATEGORY_LABELS[category as keyof typeof CATEGORY_LABELS] ?? category)}</p>
+              <p style="font-size:12px;color:#71717a;margin:0">${escapeHtml(neighborhood)}</p>
             </div>`
           )
           .addTo(map)
       })
 
-      // Click on empty area: deselect
+      // Click on empty area: deselect (queryRenderedFeatures guards against racing with pin clicks)
       map.on('click', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
           layers: ['offerings-active', 'offerings-inactive'],
         })
-        if (features.length === 0) onOfferingSelect(null)
+        if (features.length === 0) onOfferingSelectRef.current(null)
       })
 
       // Cursor pointer on hover
@@ -249,6 +251,14 @@ function offeringsToGeoJSON(offerings: Offering[]): GeoJSON.FeatureCollection {
       },
     })),
   }
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 function pulseToGeoJSON(posts: PulsePost[]): GeoJSON.FeatureCollection {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface SearchBarProps {
   value: string
@@ -9,10 +9,17 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ value, onChange, placeholder = 'Search services, neighborhoods, or zip…' }: SearchBarProps) {
+  const [inputValue, setInputValue] = useState(value)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sync if parent resets the value externally (e.g. clear filters)
+  useEffect(() => {
+    setInputValue(value)
+  }, [value])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const next = e.target.value
+    setInputValue(next)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => onChange(next), 300)
   }
@@ -33,7 +40,7 @@ export function SearchBar({ value, onChange, placeholder = 'Search services, nei
       </span>
       <input
         type="search"
-        defaultValue={value}
+        value={inputValue}
         onChange={handleChange}
         placeholder={placeholder}
         className="w-full rounded-full border border-zinc-200 bg-white py-2.5 pl-9 pr-4 text-sm text-zinc-900 placeholder:text-zinc-400
