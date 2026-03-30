@@ -73,10 +73,8 @@ export function ResultsBottomSheet({
             {/* Compact filter bar visible in half state */}
             <div className="px-4 pb-3 flex flex-col gap-2">
               <SearchBar value={searchQuery} onChange={onSearchChange} />
-              <div className="flex gap-2 overflow-x-auto scrollbar-none">
-                <CategoryChips selected={selectedCategories} onChange={onCategoriesChange} />
-                <ProviderTypeChips selected={selectedProviders} onChange={onProvidersChange} />
-              </div>
+              <CategoryChips selected={selectedCategories} onChange={onCategoriesChange} />
+              <ProviderTypeChips selected={selectedProviders} onChange={onProvidersChange} />
               <AvailabilityToggle checked={openOnly} onChange={onOpenOnlyChange} />
             </div>
 

@@ -91,7 +91,8 @@ middleware.ts                  # IP rate limiting (Vercel Edge)
 | `lat` | `float8 NOT NULL` | |
 | `lng` | `float8 NOT NULL` | |
 | `location` | `geometry(Point, 4326)` | computed from lat/lng; GIST index |
-| `hours_json` | `jsonb` | nullable |
+| `hours_json` | `jsonb` | nullable; typed as `HoursJson { text: string; schedule?: [...] }` |
+| `services` | `jsonb` | nullable; string array of human-readable service labels (e.g. `["Universal Pre-K (DOE)"]`) |
 | `availability_status` | `availability_enum NOT NULL` DEFAULT 'unknown' | open, closed, unknown |
 | `data_source` | `text` | nullable |
 | `imported_at` | `timestamptz NOT NULL` DEFAULT now() | |
@@ -152,3 +153,5 @@ RLS: anon INSERT (no description in schema — never stored); anon SELECT where 
 5. **Freshness indicator is mandatory** — every pin tooltip must show "Hours as of [imported_at]" so users understand data age.
 6. **Availability label** — must read "Open per listed hours" (not "Open now") to avoid implying real-time data.
 7. **Mapbox client-only** — `MapView` is a Client Component; server components fetch data and pass it as props.
+8. **Teardrop pins** — SVG icons generated per `ProviderType` color, loaded via `map.addImage()` before `addLayer()`. Uses `symbol` layer with `icon-image: ['concat', 'pin-', provider_type]` expression. Falls back gracefully (early return) if image load fails.
+9. **Data pipeline** — `scripts/seed_offerings.py` pulls FacDB + Workforce1 from NYC Open Data Socrata API. Minimum 1,000 row sanity check blocks truncate on partial fetch. Run monthly via service role key.

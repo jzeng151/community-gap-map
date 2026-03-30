@@ -1,4 +1,4 @@
-import { Offering, PROVIDER_LABELS, PROVIDER_COLORS } from '@/types'
+import { Offering, PROVIDER_LABELS, PROVIDER_COLORS, CATEGORY_COLORS } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 
 interface PinTooltipProps {
@@ -38,7 +38,7 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
           <p className="text-xs text-zinc-500 mt-1">{offering.address}</p>
         )}
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
             style={{
@@ -51,7 +51,30 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
           <Badge status={offering.availability_status} />
         </div>
 
-        <p className="text-xs text-zinc-400 mt-3">
+        {offering.services && offering.services.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {offering.services.map((s, i) => (
+              <span
+                key={`${s}-${i}`}
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: `${CATEGORY_COLORS[offering.category]}18`,
+                  color: CATEGORY_COLORS[offering.category],
+                }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {offering.hours_json?.text && (
+          <p className="text-xs text-zinc-600 mt-2">
+            <span className="font-medium">Hours:</span> {offering.hours_json.text}
+          </p>
+        )}
+
+        <p className="text-xs text-zinc-400 mt-2">
           Hours as of {importedDate} ·{' '}
           <button
             onClick={() => onFlag(offering.id)}

@@ -40,7 +40,8 @@ export function MapDashboard({ initialOfferings, initialPulsePosts }: MapDashboa
       result = result.filter(
         o =>
           o.name.toLowerCase().includes(q) ||
-          o.address?.toLowerCase().includes(q)
+          o.address?.toLowerCase().includes(q) ||
+          o.services?.some(s => s.toLowerCase().includes(q))
       )
     }
 
@@ -102,10 +103,8 @@ export function MapDashboard({ initialOfferings, initialPulsePosts }: MapDashboa
           {/* Mobile floating search + filter bar */}
           <div className="md:hidden absolute top-3 left-3 right-3 z-10 flex flex-col gap-2 pointer-events-auto">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
-            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
-              <CategoryChips selected={selectedCategories} onChange={setSelectedCategories} />
-              <ProviderTypeChips selected={selectedProviders} onChange={setSelectedProviders} />
-            </div>
+            <CategoryChips selected={selectedCategories} onChange={setSelectedCategories} />
+            <ProviderTypeChips selected={selectedProviders} onChange={setSelectedProviders} />
             <AvailabilityToggle checked={openOnly} onChange={setOpenOnly} />
           </div>
 

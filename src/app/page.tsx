@@ -5,7 +5,7 @@ import { MapDashboard } from '@/components/MapDashboard'
 async function fetchOfferings(): Promise<Offering[]> {
   const { data, error } = await supabase
     .from('offerings')
-    .select('id, name, category, provider_type, address, lat, lng, hours_json, availability_status, data_source, imported_at, flagged')
+    .select('id, name, category, provider_type, address, lat, lng, hours_json, services, availability_status, data_source, imported_at, flagged')
     .eq('flagged', false)
 
   if (error) {

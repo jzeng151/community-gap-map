@@ -44,12 +44,8 @@ export function ResultsSidebar({
       {/* Search + filters */}
       <div className="p-4 border-b border-zinc-100 flex flex-col gap-3">
         <SearchBar value={searchQuery} onChange={onSearchChange} />
-        <div className="overflow-x-auto scrollbar-none">
-          <CategoryChips selected={selectedCategories} onChange={onCategoriesChange} />
-        </div>
-        <div className="overflow-x-auto scrollbar-none">
-          <ProviderTypeChips selected={selectedProviders} onChange={onProvidersChange} />
-        </div>
+        <CategoryChips selected={selectedCategories} onChange={onCategoriesChange} />
+        <ProviderTypeChips selected={selectedProviders} onChange={onProvidersChange} />
         <AvailabilityToggle checked={openOnly} onChange={onOpenOnlyChange} />
       </div>
 

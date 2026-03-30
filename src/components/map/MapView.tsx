@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { Offering, PulsePost, PROVIDER_COLORS, CATEGORY_LABELS } from '@/types'
+import { Offering, PulsePost, PROVIDER_COLORS, CATEGORY_LABELS, ProviderType } from '@/types'
 import { Legend } from './Legend'
 import { PinTooltip } from './PinTooltip'
 
@@ -54,42 +54,46 @@ export function MapView({
 
     map.addControl(new mapboxgl.NavigationControl(), 'bottom-right')
 
-    map.on('load', () => {
+    map.on('load', async () => {
+      // --- Load teardrop pin images for each provider type ---
+      const providerTypes: ProviderType[] = ['gov', 'npo', 'mutual-aid']
+      try {
+        await Promise.all(
+          providerTypes.map(pt =>
+            loadPinImage(PROVIDER_COLORS[pt]).then(img => {
+              if (!map.hasImage(`pin-${pt}`)) map.addImage(`pin-${pt}`, img)
+            })
+          )
+        )
+      } catch (err) {
+        console.error('Failed to load pin images:', err)
+        return
+      }
+
       // --- Offerings source ---
       map.addSource('offerings', {
         type: 'geojson',
         data: offeringsToGeoJSON(offeringsRef.current),
       })
 
-      // Closed / unknown: faded fill + colored stroke
+      // Single symbol layer — teardrop pin, faded when status is not 'open'
       map.addLayer({
-        id: 'offerings-inactive',
-        type: 'circle',
+        id: 'offerings-pins',
+        type: 'symbol',
         source: 'offerings',
-        filter: ['!=', ['get', 'availability_status'], 'open'],
-        paint: {
-          'circle-radius': 7,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 0.3,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': ['get', 'color'],
-          'circle-stroke-opacity': 0.7,
+        layout: {
+          'icon-image': ['concat', 'pin-', ['get', 'provider_type']],
+          'icon-size': 0.9,
+          'icon-allow-overlap': true,
+          'icon-anchor': 'bottom',
         },
-      })
-
-      // Open: full color
-      map.addLayer({
-        id: 'offerings-active',
-        type: 'circle',
-        source: 'offerings',
-        filter: ['==', ['get', 'availability_status'], 'open'],
         paint: {
-          'circle-radius': 8,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 1,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-stroke-opacity': 1,
+          'icon-opacity': [
+            'case',
+            ['==', ['get', 'availability_status'], 'open'],
+            1,
+            0.5,
+          ],
         },
       })
 
@@ -158,8 +162,7 @@ export function MapView({
         if (found) onOfferingSelectRef.current(found)
       }
 
-      map.on('click', 'offerings-active', handleOfferingClick)
-      map.on('click', 'offerings-inactive', handleOfferingClick)
+      map.on('click', 'offerings-pins', handleOfferingClick)
 
       map.on('click', 'pulse-dots', (e) => {
         const feat = e.features?.[0]
@@ -180,13 +183,13 @@ export function MapView({
       // Click on empty area: deselect (queryRenderedFeatures guards against racing with pin clicks)
       map.on('click', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-          layers: ['offerings-active', 'offerings-inactive'],
+          layers: ['offerings-pins'],
         })
         if (features.length === 0) onOfferingSelectRef.current(null)
       })
 
       // Cursor pointer on hover
-      for (const layer of ['offerings-active', 'offerings-inactive', 'pulse-dots', 'pulse-clusters']) {
+      for (const layer of ['offerings-pins', 'pulse-dots', 'pulse-clusters']) {
         map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer' })
         map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = '' })
       }
@@ -246,11 +249,30 @@ function offeringsToGeoJSON(offerings: Offering[]): GeoJSON.FeatureCollection {
       geometry: { type: 'Point', coordinates: [o.lng, o.lat] },
       properties: {
         id: o.id,
-        color: PROVIDER_COLORS[o.provider_type],
+        provider_type: o.provider_type,
         availability_status: o.availability_status,
       },
     })),
   }
+}
+
+function pinSvg(color: string): string {
+  // Google Maps-style teardrop: rounded top, pointed bottom, white inner circle
+  return `<svg width="28" height="40" viewBox="0 0 28 40" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26S28 24.5 28 14C28 6.268 21.732 0 14 0z" fill="${color}"/>
+    <circle cx="14" cy="13" r="6" fill="white" opacity="0.9"/>
+  </svg>`
+}
+
+function loadPinImage(color: string): Promise<HTMLImageElement> {
+  const svg = pinSvg(color)
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+  return new Promise((resolve, reject) => {
+    const img = new Image(28, 40)
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = url
+  })
 }
 
 function escapeHtml(s: string): string {
