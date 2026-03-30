@@ -1,4 +1,4 @@
-import { Offering, PROVIDER_LABELS, PROVIDER_COLORS } from '@/types'
+import { Offering, PROVIDER_LABELS, PROVIDER_COLORS, CATEGORY_COLORS } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 
 interface ResultCardProps {
@@ -43,7 +43,13 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
           {PROVIDER_LABELS[offering.provider_type]}
         </span>
         {offering.services?.[0] && (
-          <span className="text-xs rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
+          <span
+            className="text-xs rounded-full px-2 py-0.5 font-medium"
+            style={{
+              backgroundColor: `${CATEGORY_COLORS[offering.category]}18`,
+              color: CATEGORY_COLORS[offering.category],
+            }}
+          >
             {offering.services[0]}
           </span>
         )}

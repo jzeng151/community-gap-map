@@ -280,13 +280,30 @@ def load_env() -> dict[str, str]:
     return env
 
 
-def upsert_to_supabase(offerings: list[dict], supabase_url: str, service_key: str) -> None:
+def truncate_offerings(supabase_url: str, service_key: str) -> None:
+    """Delete all non-flagged rows. Preserves any rows manually flagged as inaccurate."""
+    endpoint = f"{supabase_url.rstrip('/')}/rest/v1/offerings?flagged=eq.false"
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Prefer": "return=minimal",
+    }
+    req = urllib.request.Request(endpoint, headers=headers, method="DELETE")
+    try:
+        with urllib.request.urlopen(req, timeout=60):
+            print("  Cleared existing offerings (flagged=false).", file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        print(f"  Truncate error: {e.code} {e.read().decode()[:200]}", file=sys.stderr)
+        sys.exit(1)
+
+
+def insert_to_supabase(offerings: list[dict], supabase_url: str, service_key: str) -> None:
     endpoint = f"{supabase_url.rstrip('/')}/rest/v1/offerings"
     headers = {
         "apikey": service_key,
         "Authorization": f"Bearer {service_key}",
         "Content-Type": "application/json",
-        "Prefer": "resolution=merge-duplicates,return=minimal",
+        "Prefer": "return=minimal",
     }
     batch_size = 500
     total = 0
@@ -295,11 +312,11 @@ def upsert_to_supabase(offerings: list[dict], supabase_url: str, service_key: st
         body = json.dumps(batch).encode()
         req = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
         try:
-            with urllib.request.urlopen(req, timeout=60) as resp:
+            with urllib.request.urlopen(req, timeout=60):
                 total += len(batch)
-                print(f"  Upserted {total}/{len(offerings)}...", file=sys.stderr)
+                print(f"  Inserted {total}/{len(offerings)}...", file=sys.stderr)
         except urllib.error.HTTPError as e:
-            print(f"  Supabase error batch {i//batch_size}: {e.code} {e.read().decode()[:200]}", file=sys.stderr)
+            print(f"  Insert error batch {i//batch_size}: {e.code} {e.read().decode()[:200]}", file=sys.stderr)
             sys.exit(1)
 
 # ---------------------------------------------------------------------------
@@ -365,8 +382,10 @@ def main() -> None:
         )
         sys.exit(1)
 
-    print(f"\nUpserting {len(all_offerings)} records to Supabase...", file=sys.stderr)
-    upsert_to_supabase(all_offerings, supabase_url, service_key)
+    print(f"\nClearing existing offerings...", file=sys.stderr)
+    truncate_offerings(supabase_url, service_key)
+    print(f"Inserting {len(all_offerings)} records...", file=sys.stderr)
+    insert_to_supabase(all_offerings, supabase_url, service_key)
     print(f"Done. {len(all_offerings)} offerings seeded.", file=sys.stderr)
 
 

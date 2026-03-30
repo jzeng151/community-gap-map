@@ -51,6 +51,15 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   jobs: 'Jobs',
 }
 
+export const CATEGORY_COLORS: Record<Category, string> = {
+  food:       '#F59E0B', // amber
+  housing:    '#8B5CF6', // violet
+  healthcare: '#EF4444', // red
+  childcare:  '#EC4899', // pink
+  legal:      '#6366F1', // indigo
+  jobs:       '#14B8A6', // teal
+}
+
 export const PROVIDER_LABELS: Record<ProviderType, string> = {
   gov: 'Government',
   npo: 'Nonprofit',

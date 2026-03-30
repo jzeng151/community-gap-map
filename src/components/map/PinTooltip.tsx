@@ -1,4 +1,4 @@
-import { Offering, PROVIDER_LABELS, PROVIDER_COLORS } from '@/types'
+import { Offering, PROVIDER_LABELS, PROVIDER_COLORS, CATEGORY_COLORS } from '@/types'
 import { Badge } from '@/components/ui/Badge'
 
 interface PinTooltipProps {
@@ -54,7 +54,14 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
         {offering.services && offering.services.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {offering.services.map(s => (
-              <span key={s} className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
+              <span
+                key={s}
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: `${CATEGORY_COLORS[offering.category]}18`,
+                  color: CATEGORY_COLORS[offering.category],
+                }}
+              >
                 {s}
               </span>
             ))}
