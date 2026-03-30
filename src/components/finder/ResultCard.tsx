@@ -29,7 +29,7 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
       </div>
 
       {offering.address && (
-        <p className="text-xs text-zinc-500 mt-0.5 truncate">{offering.address}</p>
+        <p className="text-xs text-zinc-500 mt-0.5">{offering.address}</p>
       )}
 
       <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -44,7 +44,7 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
         </span>
         {offering.services?.[0] && (
           <span
-            className="text-xs rounded-full px-2 py-0.5 font-medium"
+            className="text-xs rounded-full px-2 py-0.5 font-medium whitespace-nowrap"
             style={{
               backgroundColor: `${CATEGORY_COLORS[offering.category]}18`,
               color: CATEGORY_COLORS[offering.category],
@@ -61,7 +61,7 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
       </div>
 
       {offering.hours_json?.text ? (
-        <p className="text-xs text-zinc-500 mt-1.5 truncate">
+        <p className="text-xs text-zinc-500 mt-1.5">
           <span className="font-medium">Hours:</span> {offering.hours_json.text}
         </p>
       ) : (

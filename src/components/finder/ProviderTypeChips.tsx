@@ -20,7 +20,7 @@ export function ProviderTypeChips({ selected, onChange }: ProviderTypeChipsProps
   }
 
   return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
+    <div className="flex flex-wrap gap-2">
       {PROVIDERS.map(pt => (
         <Chip
           key={pt}
