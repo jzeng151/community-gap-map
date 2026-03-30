@@ -28,6 +28,37 @@ from collections import Counter
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+# Acronyms that should stay uppercase after title-casing
+_KEEP_UPPER = {"NYC", "DOE", "CUNY", "SUNY", "GED", "HIV", "AIDS", "STD", "STI",
+               "LGBTQ", "STEM", "HRA", "ACS", "DYCD", "DOHMH", "SBS", "HPD",
+               "DHS", "NYPD", "FDNY", "DMV", "EBT", "SNAP"}
+
+_APOSTROPHE_RE = re.compile(r"(\b\w+)'(\w)\b")
+
+def _title(s: str) -> str:
+    """Title-case a facility name, preserving apostrophes and known acronyms.
+
+    str.title() breaks on apostrophes: "WOMEN'S" → "Women'S".
+    It also lowercases acronyms: "NYC" → "Nyc".
+    """
+    # Capitalise each word, then fix apostrophe-followup letters (Women'S → Women's)
+    result = _APOSTROPHE_RE.sub(lambda m: m.group(0)[:-1] + m.group(2).lower(), s.title())
+    # Restore known acronyms
+    words = result.split()
+    restored = []
+    for w in words:
+        clean = re.sub(r"[^A-Za-z]", "", w).upper()
+        if clean in _KEEP_UPPER:
+            restored.append(w.replace(w[:len(clean)], clean, 1) if w[:len(clean)].isalpha() else w.upper())
+        else:
+            restored.append(w)
+    return " ".join(restored)
+
+
+# ---------------------------------------------------------------------------
 # Schema mappings
 # ---------------------------------------------------------------------------
 
@@ -158,7 +189,7 @@ def facdb_to_offering(row: dict) -> dict | None:
     service_label = SERVICE_LABELS.get(facsubgrp)
 
     return {
-        "name": row.get("facname", "").strip().title(),
+        "name": _title(row.get("facname", "").strip()),
         "category": category,
         "provider_type": PROVIDER_TYPE_MAP.get(row.get("optype", ""), "npo"),
         "address": _build_address(row),
@@ -215,7 +246,7 @@ def workforce1_to_offering(row: dict) -> dict | None:
     services = [location_type] if location_type else ["Workforce1 Career Center"]
 
     return {
-        "name": row.get("name", "").strip().title(),
+        "name": _title(row.get("name", "").strip()),
         "category": "jobs",
         "provider_type": "gov",
         "address": address,
@@ -360,7 +391,12 @@ def main() -> None:
     print("\nProvider type breakdown:", file=sys.stderr)
     for pt, n in sorted(providers.items()):
         print(f"  {pt}: {n}", file=sys.stderr)
-    print(f"\nRecords with hours: {with_hours}/{len(all_offerings)} ({100*with_hours//len(all_offerings)}%)", file=sys.stderr)
+    hours_pct = (100 * with_hours // len(all_offerings)) if all_offerings else 0
+    print(f"\nRecords with hours: {with_hours}/{len(all_offerings)} ({hours_pct}%)", file=sys.stderr)
+
+    if not all_offerings:
+        print("No offerings to seed — aborting.", file=sys.stderr)
+        sys.exit(1)
 
     if args.out:
         Path(args.out).write_text(json.dumps(all_offerings, indent=2))
@@ -378,6 +414,17 @@ def main() -> None:
         print(
             "\nMissing env vars. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY "
             "in .env.local or as environment variables.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Sanity check: refuse to wipe the DB if fetch returned suspiciously few records.
+    # Protects against partial Socrata failures mid-pagination silently truncating data.
+    MIN_EXPECTED = 1000
+    if len(all_offerings) < MIN_EXPECTED:
+        print(
+            f"\nSafety check failed: only {len(all_offerings)} offerings fetched "
+            f"(minimum expected: {MIN_EXPECTED}). Aborting — DB not modified.",
             file=sys.stderr,
         )
         sys.exit(1)
