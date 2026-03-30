@@ -157,7 +157,7 @@ def _parse_hours(text: str) -> dict | None:
         return None
     schedule = []
     for m in _HOURS_RE.finditer(text):
-        days = m.group(1).strip()
+        days = m.group(1).strip().lstrip(";").strip()
         hours = m.group(2).strip()
         schedule.append({"days": days, "hours": hours})
     if not schedule:
@@ -232,9 +232,21 @@ def load_env() -> dict[str, str]:
     if env_path.exists():
         for line in env_path.read_text().splitlines():
             line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip().strip('"').strip("'")
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            v = v.strip()
+            # Strip quoted values (handles inline comments after closing quote)
+            if v.startswith('"'):
+                end = v.find('"', 1)
+                v = v[1:end] if end != -1 else v[1:]
+            elif v.startswith("'"):
+                end = v.find("'", 1)
+                v = v[1:end] if end != -1 else v[1:]
+            else:
+                # Unquoted: strip inline comment
+                v = v.split("#")[0].strip()
+            env[k.strip()] = v
     return env
 
 

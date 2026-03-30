@@ -31,7 +31,7 @@
 - [x] 2.4 Write Python import script — `scripts/seed_offerings.py`; FacDB + Workforce1; dedupe keeps record with hours on conflict
 - [x] 2.5 Hours quality check — FacDB 0% hours → all `unknown`; Workforce1 has hours for 41 career centers
 - [x] 2.6 Set `availability_status` at import time; `imported_at` set server-side at upsert
-- [ ] 2.7 Run one-time seed into Supabase via service role key; verify row count + spot-check per borough
+- [x] 2.7 Run one-time seed into Supabase via service role key; 15,466 rows, verified food/jobs/hours spot-check
 - [x] 2.8 Re-import procedure documented in NOTES.md
 
 ---
