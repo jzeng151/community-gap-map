@@ -53,9 +53,9 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
 
         {offering.services && offering.services.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {offering.services.map(s => (
+            {offering.services.map((s, i) => (
               <span
-                key={s}
+                key={`${s}-${i}`}
                 className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                 style={{
                   backgroundColor: `${CATEGORY_COLORS[offering.category]}18`,
@@ -75,7 +75,7 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
         )}
 
         <p className="text-xs text-zinc-400 mt-2">
-          Updated {importedDate} ·{' '}
+          Hours as of {importedDate} ·{' '}
           <button
             onClick={() => onFlag(offering.id)}
             className="underline hover:text-zinc-600 cursor-pointer"
