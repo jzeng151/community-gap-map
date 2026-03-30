@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.1.0] - 2026-03-30
+
+### Added
+- NYC Open Data seed pipeline (`scripts/seed_offerings.py`): pulls FacDB (15k+ facilities) and Workforce1 Career Centers (41 records with hours); deduplicates by name/address/category; seeds Supabase via service role key
+- Human-readable service type labels on every offering (e.g. "Soup Kitchen / Food Pantry", "Universal Pre-K (DOE)") with per-category color chips in both result cards and pin tooltips
+- Hours display in result cards and pin tooltips when `hours_json.text` is present
+- Google Maps-style teardrop pin shape — SVG icons loaded per provider type, `icon-anchor: bottom` so tip points at the coordinate
+- `CATEGORY_COLORS` constant in `src/types/index.ts` for consistent category-to-color mapping
+- `HoursJson` typed interface replacing `Record<string, unknown>` for `hours_json`
+- `supabase/migrations/004_services.sql`: adds `services jsonb` column
+
+### Changed
+- Search bar now matches against `services` array labels in addition to name and address
+- Category and provider filter chips switch from hidden horizontal scroll to `flex-wrap` — all filters visible without scrolling
+- Service chips in result cards use `whitespace-nowrap` to prevent mid-text line breaks
+- Address and hours text in result cards no longer truncated with ellipsis
+
+### Fixed
+- `scripts/seed_offerings.py`: minimum row sanity check (1,000) blocks truncate when Socrata returns partial data due to mid-pagination failure
+- `scripts/seed_offerings.py`: `_title()` helper preserves apostrophes (Women's) and known acronyms (NYC, DOE, GED) that `str.title()` corrupts
+- `scripts/seed_offerings.py`: `ZeroDivisionError` crash when both sources return zero records
+- `MapView.tsx`: async image load errors caught with try/catch + early return so layers are not registered against missing images
+- `PinTooltip.tsx`: freshness indicator restored to spec text "Hours as of [date] · Flag if inaccurate" per CLAUDE.md
+- `PinTooltip.tsx`: `key={s}` replaced with `key={\`${s}-${i}\`}` to handle duplicate service strings without React key collisions
+
 ## [0.2.0] - 2026-03-28
 
 ### Added
