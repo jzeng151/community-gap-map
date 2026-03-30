@@ -3,6 +3,11 @@ export type ProviderType = 'gov' | 'npo' | 'mutual-aid'
 export type AvailabilityStatus = 'open' | 'closed' | 'unknown'
 export type PulseStatus = 'visible' | 'hidden'
 
+export interface HoursJson {
+  text: string
+  schedule?: { days: string; hours: string }[]
+}
+
 export interface Offering {
   id: string
   name: string
@@ -11,7 +16,8 @@ export interface Offering {
   address: string | null
   lat: number
   lng: number
-  hours_json: Record<string, unknown> | null
+  hours_json: HoursJson | null
+  services: string[] | null
   availability_status: AvailabilityStatus
   data_source: string | null
   imported_at: string

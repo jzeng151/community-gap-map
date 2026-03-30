@@ -32,7 +32,7 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
         <p className="text-xs text-zinc-500 mt-0.5 truncate">{offering.address}</p>
       )}
 
-      <div className="flex items-center gap-2 mt-2">
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
         <span
           className="text-xs font-medium rounded-full px-2 py-0.5"
           style={{
@@ -42,6 +42,11 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
         >
           {PROVIDER_LABELS[offering.provider_type]}
         </span>
+        {offering.services?.[0] && (
+          <span className="text-xs rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-600">
+            {offering.services[0]}
+          </span>
+        )}
         {distanceKm !== undefined && (
           <span className="text-xs text-zinc-400">
             {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm.toFixed(1)}km`}
@@ -49,7 +54,13 @@ export function ResultCard({ offering, selected, onClick, distanceKm }: ResultCa
         )}
       </div>
 
-      <p className="text-xs text-zinc-400 mt-1.5">Hours as of {importedDate}</p>
+      {offering.hours_json?.text ? (
+        <p className="text-xs text-zinc-500 mt-1.5 truncate">
+          <span className="font-medium">Hours:</span> {offering.hours_json.text}
+        </p>
+      ) : (
+        <p className="text-xs text-zinc-400 mt-1.5">Updated {importedDate}</p>
+      )}
     </button>
   )
 }

@@ -31,6 +31,28 @@ from pathlib import Path
 # Schema mappings
 # ---------------------------------------------------------------------------
 
+# FacDB facsubgrp → human-readable service label
+SERVICE_LABELS: dict[str, str] = {
+    "SOUP KITCHENS AND FOOD PANTRIES": "Soup Kitchen / Food Pantry",
+    "CHILD NUTRITION": "Child Nutrition Program",
+    "NON-RESIDENTIAL HOUSING AND HOMELESS SERVICES": "Housing & Homeless Services",
+    "HOSPITALS AND CLINICS": "Hospital / Clinic",
+    "MENTAL HEALTH": "Mental Health Services",
+    "SUBSTANCE USE DISORDER TREATMENT PROGRAMS": "Substance Use Treatment",
+    "OTHER HEALTH CARE": "Health Care",
+    "RESIDENTIAL HEALTH CARE": "Residential Health Care",
+    "HEALTH PROMOTION AND DISEASE PREVENTION": "Health Promotion",
+    "DAY CARE": "Day Care",
+    "DOE UNIVERSAL PRE-KINDERGARTEN": "Universal Pre-K (DOE)",
+    "AFTER-SCHOOL PROGRAMS": "After-School Program",
+    "PRESCHOOLS FOR STUDENTS WITH DISABILITIES": "Preschool for Special Needs",
+    "LEGAL AND INTERVENTION SERVICES": "Legal Aid / Intervention",
+    "WORKFORCE DEVELOPMENT": "Workforce Development",
+    "YOUTH CENTERS, LITERACY PROGRAMS, AND JOB TRAINING SERVICES": "Youth Services / Job Training",
+    "GED AND ALTERNATIVE HIGH SCHOOL EQUIVALENCY": "GED / HiSET Prep",
+    "ADULT AND IMMIGRANT LITERACY": "Adult & Immigrant Literacy",
+}
+
 # FacDB facsubgrp → our category
 CATEGORY_MAP: dict[str, str] = {
     # food
@@ -132,6 +154,9 @@ def facdb_to_offering(row: dict) -> dict | None:
     if not category:
         return None
 
+    facsubgrp = row.get("facsubgrp", "")
+    service_label = SERVICE_LABELS.get(facsubgrp)
+
     return {
         "name": row.get("facname", "").strip().title(),
         "category": category,
@@ -140,6 +165,7 @@ def facdb_to_offering(row: dict) -> dict | None:
         "lat": lat,
         "lng": lng,
         "hours_json": None,
+        "services": [service_label] if service_label else None,
         "availability_status": "unknown",
         "data_source": f"facdb:{row.get('datasource', '')}",
         "flagged": False,
@@ -185,6 +211,9 @@ def workforce1_to_offering(row: dict) -> dict | None:
     hours_text = row.get("hours", "")
     hours_json = _parse_hours(hours_text)
 
+    location_type = row.get("location_type", "").strip()
+    services = [location_type] if location_type else ["Workforce1 Career Center"]
+
     return {
         "name": row.get("name", "").strip().title(),
         "category": "jobs",
@@ -193,6 +222,7 @@ def workforce1_to_offering(row: dict) -> dict | None:
         "lat": lat,
         "lng": lng,
         "hours_json": hours_json,
+        "services": services,
         "availability_status": "unknown",
         "data_source": "workforce1:sbs",
         "flagged": False,

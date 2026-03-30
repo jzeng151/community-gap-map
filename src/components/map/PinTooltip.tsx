@@ -38,7 +38,7 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
           <p className="text-xs text-zinc-500 mt-1">{offering.address}</p>
         )}
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span
             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
             style={{
@@ -51,8 +51,24 @@ export function PinTooltip({ offering, onClose, onFlag }: PinTooltipProps) {
           <Badge status={offering.availability_status} />
         </div>
 
-        <p className="text-xs text-zinc-400 mt-3">
-          Hours as of {importedDate} ·{' '}
+        {offering.services && offering.services.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {offering.services.map(s => (
+              <span key={s} className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {offering.hours_json?.text && (
+          <p className="text-xs text-zinc-600 mt-2">
+            <span className="font-medium">Hours:</span> {offering.hours_json.text}
+          </p>
+        )}
+
+        <p className="text-xs text-zinc-400 mt-2">
+          Updated {importedDate} ·{' '}
           <button
             onClick={() => onFlag(offering.id)}
             className="underline hover:text-zinc-600 cursor-pointer"
